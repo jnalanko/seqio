@@ -35,6 +35,14 @@ void write_as_fastq(const std::vector<std::string>& seqs, std::string fastq_file
     }
 }
 
+void write_as_fasta(const std::vector<std::string>& seqs, std::string fastq_filename){
+    std::ofstream out(fastq_filename);
+    if(!out.good()) throw std::runtime_error("Error opening file " + fastq_filename);
+    for(const std::string& S : seqs){
+        out << ">\n" << S << "\n";
+    }
+}
+
 
 void write_seqs_to_fasta_file(const std::vector<std::string>& v, const std::string& filename){
     std::ofstream out(filename);

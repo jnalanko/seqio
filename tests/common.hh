@@ -30,6 +30,7 @@ std::string get_random_string(int64_t length, int64_t alphabet_size);
 std::string get_random_filename();
 
 void write_as_fastq(const std::vector<std::string>& seqs, std::string fastq_filename);
+void write_as_fasta(const std::vector<std::string>& seqs, std::string fastq_filename);
 void write_seqs_to_fasta_file(const std::vector<std::string>& v, const std::string& filename);
 void write_seqs_to_fasta_file(const std::vector<std::string>& seqs, const std::vector<std::string>& headers, const std::string& filename);
 int64_t cur_time_millis();

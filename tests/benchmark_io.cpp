@@ -5,10 +5,33 @@
 #include <fstream>
 #include <iostream>
 #include <chrono>
+#include <filesystem>
 
 using namespace std;
 
-int main(){
+void benchmark_buffered_stream(){
+    string data = get_random_string(1e6 * 50, 10);
+    string outfile = get_random_string(10, 26);
+    ofstream out(outfile, ios::binary);
+    out.write(data.data(), data.size());
+    out.flush();
+
+    ifstream in(outfile, ios::binary);
+    SeqIO::Buffered_ifstream<ifstream> bin(outfile, ios::binary);
+    
+    string data2(data.size(), '\0');
+
+    int64_t t0 = cur_time_millis();
+    bin.read((char*)data2.data(), data2.size());
+    int64_t t1 = cur_time_millis();
+    double seconds = (t1 - t0) / 1000.0;
+    cout << "Read " << data2.size() << " bytes" << endl;
+    cout << "Raw buffered bytes: " << data.size() / 1e6 / seconds << " MB/s" << endl;
+
+    std::filesystem::remove(outfile);
+}
+
+void benchmark_seqio(){
 
     // Generate 10 megabases of reads of length 100
     vector<string> reads;
@@ -18,18 +41,16 @@ int main(){
         total_len += 100;
     }
 
-    // Create a new fasta file for each so avoid caching effects
-    string fastq1 = get_random_string(10, 26);
-    string fastq2 = get_random_string(10, 26);
-    string fastq3 = get_random_string(10, 26);
+    string fastq = get_random_string(10, 26);
+    string fasta = get_random_string(10, 26);
 
-    write_as_fastq(reads, fastq1);
-    write_as_fastq(reads, fastq2);
-    write_as_fastq(reads, fastq3);
+    write_as_fastq(reads, fastq);
+    write_as_fasta(reads, fasta);
 
-    // Unbuffered
-
-    SeqIO::Reader sr(fastq1, SeqIO::FASTQ);
+    //
+    // FASTQ
+    //
+    SeqIO::Reader sr(fastq, SeqIO::FASTQ);
     int64_t sr_t0 = cur_time_millis();
 
     int64_t counter = 0;
@@ -40,7 +61,34 @@ int main(){
     }
     int64_t sr_t1 = cur_time_millis();
     double sr_seconds = (sr_t1 - sr_t0) / 1000.0;
-    cout << "Total sequence length read: " << counter << endl;
-    cout << total_len / 1e6 / sr_seconds << " Mbp/s" << endl;
+    cout << "FASTQ: Total sequence length read: " << counter << endl;
+    cout << total_len / 1e6 / sr_seconds << " MBase/s" << endl;
 
+    cout << "--" << endl;
+    //
+    // FASTA
+    //
+    SeqIO::Reader sr2(fasta, SeqIO::FASTA);
+    sr_t0 = cur_time_millis();
+
+    counter = 0;
+    while(true){
+        int64_t len = sr2.get_next_read_to_buffer();
+        if(len == 0) break;
+        counter += len;
+    }
+    sr_t1 = cur_time_millis();
+    sr_seconds = (sr_t1 - sr_t0) / 1000.0;
+    cout << "FASTA: Total sequence length read: " << counter << endl;
+    cout << total_len / 1e6 / sr_seconds << " MBase/s" << endl;
+
+    std::filesystem::remove(fastq);
+    std::filesystem::remove(fasta);
+
+}
+
+int main(){
+    benchmark_seqio();
+    cout << "---" << endl;
+    benchmark_buffered_stream();
 }

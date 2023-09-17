@@ -2,13 +2,13 @@
 #include "SeqIO/SeqIO.hh"
 #include "common.hh"
 
-using namespace SeqIO;
+using namespace seq_io;
 using namespace std;
 
 TestLogger logger; // Pipe things you want to print into this object with the '<<' operator
 
 void check_sequence_reader_output(const vector<string>& seqs, int64_t mode, string fastafile){
-    SeqIO::Reader sr(fastafile, mode);
+    seq_io::Reader sr(fastafile, mode);
     int64_t n_seqs_read = 0;
     for(string seq : seqs){
         ASSERT_EQ(sr.get_next_read(), seq);
@@ -19,7 +19,7 @@ void check_sequence_reader_output(const vector<string>& seqs, int64_t mode, stri
 }
 
 void check_buffered_sequence_reader_output(const vector<string>& seqs, int64_t mode, string filename){
-    SeqIO::Reader sr(filename, mode);
+    seq_io::Reader sr(filename, mode);
     for(string seq : seqs){
         string next = sr.get_next_read();
         ASSERT_EQ(next, seq);
@@ -32,8 +32,8 @@ TEST(INPUT_PARSING, fasta_basic){
     string fasta = ">\n" + seqs[0] + "\n>\n" + seqs[1] + "\n";
     logger << fasta << endl << seqs << endl;
     string filename = string_to_temp_file(fasta);
-    check_sequence_reader_output(seqs, SeqIO::FASTA, filename);
-    check_buffered_sequence_reader_output(seqs, SeqIO::FASTA, filename);
+    check_sequence_reader_output(seqs, seq_io::FASTA, filename);
+    check_buffered_sequence_reader_output(seqs, seq_io::FASTA, filename);
 }
 
 TEST(INPUT_PARSING, fasta_reverse_complements){
@@ -41,7 +41,7 @@ TEST(INPUT_PARSING, fasta_reverse_complements){
     string fasta = ">\n" + seqs[0] + "\n>\n" + seqs[1] + "\n";
     logger << fasta << endl << seqs << endl;
     string filename = string_to_temp_file(fasta, ".fna");
-    SeqIO::Reader reader(filename);
+    seq_io::Reader reader(filename);
     reader.enable_reverse_complements();
     vector<string> seqs_read;
     while(true){
@@ -71,8 +71,8 @@ TEST(INPUT_PARSING, fasta_multiple_lines){
     }
     logger << fasta << endl << seqs << endl;
     string filename = string_to_temp_file(fasta);
-    check_sequence_reader_output(seqs, SeqIO::FASTA, filename);
-    check_buffered_sequence_reader_output(seqs, SeqIO::FASTA, filename);
+    check_sequence_reader_output(seqs, seq_io::FASTA, filename);
+    check_buffered_sequence_reader_output(seqs, seq_io::FASTA, filename);
 }
 
 TEST(INPUT_PARSING, fasta_upper_case){
@@ -86,8 +86,8 @@ TEST(INPUT_PARSING, fasta_upper_case){
 
     for(string& seq : seqs) for(char& c : seq) c = toupper(c); // Upper case for validation
     
-    check_sequence_reader_output(seqs, SeqIO::FASTA, filename);
-    check_buffered_sequence_reader_output(seqs, SeqIO::FASTA, filename);
+    check_sequence_reader_output(seqs, seq_io::FASTA, filename);
+    check_buffered_sequence_reader_output(seqs, seq_io::FASTA, filename);
 }
 
 TEST(INPUT_PARSING, fasta_super_long_line){
@@ -98,13 +98,13 @@ TEST(INPUT_PARSING, fasta_super_long_line){
     string fasta;
     for(string seq : seqs) fasta += ">\n" + seq + "\n";
     string filename = string_to_temp_file(fasta);
-    check_sequence_reader_output(seqs, SeqIO::FASTA, filename);
-    check_buffered_sequence_reader_output(seqs, SeqIO::FASTA, filename);
+    check_sequence_reader_output(seqs, seq_io::FASTA, filename);
+    check_buffered_sequence_reader_output(seqs, seq_io::FASTA, filename);
 }
 
 
 TEST(INPUT_PARSING, fasta_headers){
-    // Using the legacy SeqIO::Unbuffered_Reader because SeqIO::Reader does not parse SeqIO::Unbuffered_Read_stream
+    // Using the legacy seq_io::Unbuffered_Reader because seq_io::Reader does not parse seq_io::Unbuffered_Read_stream
     vector<string> seqs;
     seqs.push_back(string(3e6, 'A'));
     seqs.push_back(string(4e5, 'G'));
@@ -118,7 +118,7 @@ TEST(INPUT_PARSING, fasta_headers){
     string fasta;
     for(int64_t i = 0; i < seqs.size(); i++) fasta += ">" + headers[i] + "\n" + seqs[i] + "\n";
     string filename = string_to_temp_file(fasta, ".fna");
-    SeqIO::Reader sr(filename);
+    seq_io::Reader sr(filename);
 
     string header;
 
@@ -143,7 +143,7 @@ TEST(INPUT_PARSING, fastq_basic){
                    "@\n" + seqs[1] + "\n+\n" + quals[1] + "\n";
     logger << fastq << endl << seqs << " " << quals << endl;
     string filename = string_to_temp_file(fastq);
-    check_buffered_sequence_reader_output(seqs, SeqIO::FASTQ, filename);
+    check_buffered_sequence_reader_output(seqs, seq_io::FASTQ, filename);
 }
 
 TEST(INPUT_PARSING, fastq_reverse_complements){
@@ -153,7 +153,7 @@ TEST(INPUT_PARSING, fastq_reverse_complements){
                  + "@\n" + seqs[1] + "\n+\n" + quals[1] + "\n";
     logger << fastq << endl << seqs << endl;
     string filename = string_to_temp_file(fastq, ".fq");
-    SeqIO::Reader reader(filename);
+    seq_io::Reader reader(filename);
     reader.enable_reverse_complements();
     vector<string> seqs_read;
     while(true){
@@ -179,7 +179,7 @@ TEST(INPUT_PARSING, fastq_upper_case){
     logger << fastq << endl << seqs << " " << quals << endl;
     string filename = string_to_temp_file(fastq);
     for(string& seq : seqs) for(char& c : seq) c = toupper(c); // Upper case for validation
-    check_buffered_sequence_reader_output(seqs, SeqIO::FASTQ, filename);
+    check_buffered_sequence_reader_output(seqs, seq_io::FASTQ, filename);
 }
 
 
@@ -194,7 +194,7 @@ TEST(INPUT_PARSING, fastq_super_long_line){
     string fastq = "@\n" + seqs[0] + "\n+\n" + quals[0] + "\n" +
                    "@\n" + seqs[1] + "\n+\n" + quals[1] + "\n";
     string filename = string_to_temp_file(fastq);
-    check_buffered_sequence_reader_output(seqs, SeqIO::FASTQ, filename);
+    check_buffered_sequence_reader_output(seqs, seq_io::FASTQ, filename);
 }
 
 TEST(INPUT_PARSING, fastq_headers){
@@ -218,7 +218,7 @@ TEST(INPUT_PARSING, fastq_headers){
                    "@" + headers[2] + "\n" + seqs[2] + "\n+\n" + quals[2] + "\n";
     string filename = string_to_temp_file(fastq, ".fq");
 
-    SeqIO::Reader sr(filename);
+    seq_io::Reader sr(filename);
     string header;
 
     sr.get_next_read_to_buffer();
@@ -242,12 +242,12 @@ TEST(INPUT_PARSING, fastq_things_after_plus){
                    "@\n" + seqs[1] + "\n+SOMETHING2\n" + quals[1] + "\n";
     logger << fastq << endl << seqs << " " << quals << endl;
     string filename = string_to_temp_file(fastq);
-    check_buffered_sequence_reader_output(seqs, SeqIO::FASTQ, filename);
+    check_buffered_sequence_reader_output(seqs, seq_io::FASTQ, filename);
 }
 
 TEST(INPUT_PARSING, fasta_empty_sequence){
     string filename = string_to_temp_file(">\nAAA\n>\n>\nAAA", ".fna");
-    SeqIO::Reader sr(filename);
+    seq_io::Reader sr(filename);
     try{
         while(true) { 
             string read = sr.get_next_read();
@@ -263,7 +263,7 @@ TEST(INPUT_PARSING, fasta_empty_sequence){
 
 TEST(INPUT_PARSING, fastq_empty_sequence){
     string filename = string_to_temp_file("@\nAAA\n+\nIII\n@\n\n+\n\n@\nAAA\n+\nIII\n", ".fq");
-    SeqIO::Reader sr(filename);
+    seq_io::Reader sr(filename);
     try{
         while(true) { 
             string read = sr.get_next_read();
@@ -280,7 +280,7 @@ TEST(INPUT_PARSING, fastq_empty_sequence){
 TEST(INPUT_PARSING, first_char_sanity_check_fastq){
     string filename = string_to_temp_file("ATGCTAGCTGACTGATCGTACA", ".fq");
     try{
-        SeqIO::Reader sr(filename);
+        seq_io::Reader sr(filename);
         ASSERT_TRUE(false); // Should not come here
     } catch(std::runtime_error& e){
         // This is what was supposed to happen
@@ -292,7 +292,7 @@ TEST(INPUT_PARSING, first_char_sanity_check_fastq){
 TEST(INPUT_PARSING, first_char_sanity_check_fasta){
     string filename = string_to_temp_file("ATGCTAGCTGACTGATCGTACA", ".fna");
     try{
-        SeqIO::Reader sr(filename);
+        seq_io::Reader sr(filename);
         ASSERT_TRUE(false); // Should not come here
     } catch(std::runtime_error& e){
         // This is what was supposed to happen
@@ -327,7 +327,7 @@ TEST(INPUT_PARSING, multi_file){
         write_seqs_to_fasta_file(file_seqs, file_headers, filename);
     }
 
-    SeqIO::Multi_File_Reader<> reader(filenames);
+    seq_io::Multi_File_Reader<> reader(filenames);
 
     // Test that we can get the sequences and headers back
     int64_t seq_idx = 0;

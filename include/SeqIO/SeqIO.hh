@@ -14,7 +14,7 @@
 #include <memory>
 #include "SeqIO/buffered_streams.hh"
 
-namespace SeqIO{
+namespace seq_io{
 
 const std::vector<std::string> fasta_suffixes = {".fasta", ".fna", ".ffn", ".faa", ".frn", ".fa"};
 const std::vector<std::string> fastq_suffixes = {".fastq", ".fq"};
@@ -102,7 +102,7 @@ const NullStream &operator<<(NullStream &&os, const T &value) {
 // Return the filename of the reverse-complemented file
 template<typename reader_t, typename writer_t>
 void create_reverse_complement_file(const std::string& infile, const std::string& outfile){
-    SeqIO::FileFormat fileformat = SeqIO::figure_out_file_format(infile);
+    seq_io::FileFormat fileformat = seq_io::figure_out_file_format(infile);
 
     reader_t sr(infile);
     writer_t sw(outfile);
@@ -201,7 +201,7 @@ public:
 
     Reader(std::string filename) : filename(filename) {
         stream = std::make_unique<ifstream_t>(filename, std::ios::binary);
-        SeqIO::FileFormat fileformat = figure_out_file_format(filename);
+        seq_io::FileFormat fileformat = figure_out_file_format(filename);
         if(fileformat.format == FASTA) mode = FASTA;
         else if(fileformat.format == FASTQ) mode = FASTQ;
         else throw(std::runtime_error("Unknown file format: " + filename));
@@ -358,7 +358,7 @@ public:
 };
 
 // Produces reads from multiple files like it was a single file
-template<typename reader_t = SeqIO::Reader<>>
+template<typename reader_t = seq_io::Reader<>>
 class Multi_File_Reader{
 
     public:
@@ -424,7 +424,7 @@ class Writer{
 
     // Tries to figure out the format based on the file extension.
     Writer(std::string filename) : out(filename) {
-        SeqIO::FileFormat fileformat = figure_out_file_format(filename);
+        seq_io::FileFormat fileformat = figure_out_file_format(filename);
         if(fileformat.format == FASTA) mode = FASTA;
         else if(fileformat.format == FASTQ) mode = FASTQ;
         else throw(std::runtime_error("Unknown file format: " + filename));
@@ -468,4 +468,4 @@ inline int64_t count_sequences(const std::string& filename){
 
 
 
-} // Namespace SeqIO
+} // namespace seq_io

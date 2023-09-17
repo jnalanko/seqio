@@ -17,7 +17,7 @@ void benchmark_buffered_stream(){
     out.flush();
 
     ifstream in(outfile, ios::binary);
-    SeqIO::Buffered_ifstream<ifstream> bin(outfile, ios::binary);
+    seq_io::Buffered_ifstream<ifstream> bin(outfile, ios::binary);
     
     string data2(data.size(), '\0');
 
@@ -50,7 +50,7 @@ void benchmark_seqio(){
     //
     // FASTQ
     //
-    SeqIO::Reader sr(fastq, SeqIO::FASTQ);
+    seq_io::Reader sr(fastq, seq_io::FASTQ);
     int64_t sr_t0 = cur_time_millis();
 
     int64_t counter = 0;
@@ -68,7 +68,7 @@ void benchmark_seqio(){
     //
     // FASTA
     //
-    SeqIO::Reader sr2(fasta, SeqIO::FASTA);
+    seq_io::Reader sr2(fasta, seq_io::FASTA);
     sr_t0 = cur_time_millis();
 
     counter = 0;

@@ -8,7 +8,7 @@
 
 #include "zstr/zstr.hpp"
 
-namespace SeqIO{
+namespace seq_io{
 
 // The c++ ifstream and ofstream classes are buffered. But each read involves a virtual function
 // call, which can be slow if the reads or writes are in small chunks. The buffer is also pretty

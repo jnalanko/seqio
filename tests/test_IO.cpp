@@ -2,7 +2,7 @@
 #include "SeqIO/SeqIO.hh"
 #include "common.hh"
 
-using namespace SeqIO;
+using namespace seq_io;
 using namespace std;
 
 TEST(TEST_BUFFERED_IO, getline){

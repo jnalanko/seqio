@@ -15,6 +15,9 @@
 #include <zlib.h>
 #include "strict_fstream.hpp"
 
+namespace SeqIO
+{
+
 namespace zstr
 {
 
@@ -413,6 +416,6 @@ public:
 }; // class ofstream
 
 } // namespace zstr
-
+} // namespace SeqIO
 #endif
 

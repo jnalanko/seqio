@@ -16,8 +16,6 @@
 
 namespace SeqIO{
 
-#include "zstr/zstr.hpp" // This is included inside the namespace to avoid conflicts if the user has functions with the same names
-
 const std::vector<std::string> fasta_suffixes = {".fasta", ".fna", ".ffn", ".faa", ".frn", ".fa"};
 const std::vector<std::string> fastq_suffixes = {".fastq", ".fq"};
 

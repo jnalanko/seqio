@@ -50,13 +50,14 @@ struct FileFormat{
     std::string extension; // Includes the possible .gz extension
 };
 
-void reverse_complement_c_string(char* S, int64_t len){
+inline void reverse_complement_c_string(char* S, int64_t len){
     std::reverse(S, S + len);
     for(int64_t i = 0; i < len; i++)
         S[i] = rc_table[(int)S[i]];
 }
 
-FileFormat figure_out_file_format(std::string filename){
+// Inlined to keep this a header-only library
+inline FileFormat figure_out_file_format(std::string filename){
     Format fasta_or_fastq;
     bool gzipped = false;
     std::string extension;
@@ -452,7 +453,7 @@ class Writer{
     }
 };
 
-int64_t count_sequences(const std::string& filename){
+inline int64_t count_sequences(const std::string& filename){
     int64_t count = 0;
     if(figure_out_file_format(filename).gzipped){
         Reader<Buffered_ifstream<zstr::ifstream>> reader(filename);

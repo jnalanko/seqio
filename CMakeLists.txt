@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Add your source files and header files
 set(SOURCES
-    tests/benchmark_io.cpp
+    tests/benchmark_io.cpp tests/common.cpp
 )
 
 # Add the Google Test library
@@ -25,7 +25,7 @@ target_include_directories(benchmark PRIVATE include)
 target_compile_options(benchmark PRIVATE -Wall -Wextra -O3)
 
 # Create a test executable and link with Google Test library
-add_executable(tests tests/test_IO.cpp)
+add_executable(tests tests/test_IO.cpp tests/test_seqio.cpp tests/common.cpp)
 target_link_libraries(tests GTest::GTest GTest::Main ZLIB::ZLIB)
 
 # Include the directory with your header files for tests

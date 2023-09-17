@@ -1,7 +1,11 @@
 #include <gtest/gtest.h>
 #include "SeqIO.hh"
+#include "common.hh"
 
-using namespace sbwt;
+using namespace SeqIO;
+using namespace std;
+
+TestLogger logger; // Pipe things you want to print into this object with the '<<' operator
 
 void check_sequence_reader_output(const vector<string>& seqs, int64_t mode, string fastafile){
     SeqIO::Reader sr(fastafile, mode);
@@ -99,28 +103,6 @@ TEST(INPUT_PARSING, fasta_super_long_line){
 }
 
 
-TEST(INPUT_PARSING, fasta_headers_legacy){
-    // Using the legacy SeqIO::Unbuffered_Reader because SeqIO::Reader does not parse SeqIO::Unbuffered_Read_stream
-    vector<string> seqs;
-    seqs.push_back(string(3e6, 'A'));
-    seqs.push_back(string(4e5, 'G'));
-
-    vector<string> headers;
-    headers.push_back(string(1e5, 'h'));
-    headers.push_back(string(1e6, 'H'));
-
-    string fasta;
-    for(int64_t i = 0; i < seqs.size(); i++) fasta += ">" + headers[i] + "\n" + seqs[i] + "\n";
-    string filename = string_to_temp_file(fasta);
-    SeqIO::Unbuffered_Reader sr(filename, SeqIO::FASTA);
-    SeqIO::Unbuffered_Read_stream rs = sr.get_next_query_stream();
-    ASSERT_EQ(rs.header, headers[0]);
-    rs.get_all();
-    rs = sr.get_next_query_stream();
-    ASSERT_EQ(rs.header, headers[1]);
-    rs.get_all();
-}
-
 TEST(INPUT_PARSING, fasta_headers){
     // Using the legacy SeqIO::Unbuffered_Reader because SeqIO::Reader does not parse SeqIO::Unbuffered_Read_stream
     vector<string> seqs;
@@ -213,34 +195,6 @@ TEST(INPUT_PARSING, fastq_super_long_line){
                    "@\n" + seqs[1] + "\n+\n" + quals[1] + "\n";
     string filename = string_to_temp_file(fastq);
     check_buffered_sequence_reader_output(seqs, SeqIO::FASTQ, filename);
-}
-
-
-// Headers are not stored anymore
-TEST(INPUT_PARSING, fastq_headers_legacy){
-    // Using the legacy SeqIO::Unbuffered_Reader because SeqIO::Reader does not parse SeqIO::Unbuffered_Read_stream
-    vector<string> seqs;
-    seqs.push_back(string(1e6, 'A'));
-    seqs.push_back(string(1e5, 'G'));
-
-    vector<string> quals;
-    quals.push_back(string(1e6, 'I'));
-    quals.push_back(string(1e5, 'I'));
-
-    vector<string> headers;
-    headers.push_back(string(1e5, 'h'));
-    headers.push_back(string(1e6, 'H'));
-
-    string fastq = "@" + headers[0] + "\n" + seqs[0] + "\n+\n" + quals[0] + "\n" +
-                   "@" + headers[1] + "\n" + seqs[1] + "\n+\n" + quals[1] + "\n";
-    string filename = string_to_temp_file(fastq);
-    SeqIO::Unbuffered_Reader sr(filename, SeqIO::FASTQ);
-    SeqIO::Unbuffered_Read_stream rs = sr.get_next_query_stream();
-    ASSERT_EQ(rs.header, headers[0]);
-    rs.get_all();
-    rs = sr.get_next_query_stream();
-    ASSERT_EQ(rs.header, headers[1]);
-    rs.get_all();
 }
 
 TEST(INPUT_PARSING, fastq_headers){
@@ -358,7 +312,7 @@ TEST(INPUT_PARSING, multi_file){
     vector<string> filenames;
     // Put the sequences into files, 3 sequences per file
     for(int64_t i = 0; i < seqs.size(); i += 3){
-        string filename = get_temp_file_manager().create_filename("",".fna");
+        string filename = get_random_filename() + ".fna";
         filenames.push_back(filename);
 
         // Add up to 3 sequences

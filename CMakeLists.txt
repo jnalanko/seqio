@@ -14,12 +14,24 @@ find_package(GTest REQUIRED)
 find_package(ZLIB REQUIRED)
 
 # Create an executable for your project
-add_executable(tests ${SOURCES})
+add_executable(benchmark ${SOURCES})
 
 # Link the executable with the Google Test library
-target_link_libraries(tests GTest::GTest GTest::Main ZLIB::ZLIB)
+target_link_libraries(benchmark GTest::GTest GTest::Main ZLIB::ZLIB)
 
 # Include the directory with your header files
+target_include_directories(benchmark PRIVATE include)
+
+target_compile_options(benchmark PRIVATE -Wall -Wextra -O3)
+
+# Create a test executable and link with Google Test library
+add_executable(tests tests/test_IO.cpp)
+target_link_libraries(tests GTest::GTest GTest::Main ZLIB::ZLIB)
+
+# Include the directory with your header files for tests
 target_include_directories(tests PRIVATE include)
 
-target_compile_options(tests PRIVATE -Wall -Wextra -O3)
+# Add your test source files here
+
+# Add tests to the test suite (optional)
+add_test(NAME YourTestSuite COMMAND tests)

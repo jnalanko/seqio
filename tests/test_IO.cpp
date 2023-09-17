@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "SeqIO.hh"
+#include "SeqIO/SeqIO.hh"
 #include "common.hh"
 
 using namespace SeqIO;

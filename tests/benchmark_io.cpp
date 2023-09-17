@@ -1,4 +1,4 @@
-#include "SeqIO.hh"
+#include "SeqIO/SeqIO.hh"
 #include "common.hh"
 #include <vector>
 #include <string>

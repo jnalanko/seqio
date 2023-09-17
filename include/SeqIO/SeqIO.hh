@@ -12,7 +12,7 @@
 #include <cassert>
 #include <algorithm>
 #include <memory>
-#include "buffered_streams.hh"
+#include "SeqIO/buffered_streams.hh"
 
 namespace SeqIO{
 
@@ -122,12 +122,11 @@ void create_reverse_complement_file(const std::string& infile, const std::string
 
 // Creates a reverse-complement version of each file and return the filenames of the new files
 template<typename reader_t, typename writer_t>
-std::vector<std::string> create_reverse_complement_files(const std::vector<std::string>& files){
-    std::vector<std::string> newfiles;
-    for(std::string f : files){
-        newfiles.push_back(create_reverse_complement_file<reader_t, writer_t>(f));
+void create_reverse_complement_files(const std::vector<std::string>& infiles, const std::vector<std::string>& outfiles){
+    assert(infiles.size() == outfiles.size());
+    for(int64_t i = 0; i < infiles.size(); i++){
+        create_reverse_complement_file<reader_t, writer_t>(infiles[i], outfiles[i]);
     }
-    return newfiles;
 }
 
 template<typename ifstream_t = Buffered_ifstream<std::ifstream>> // The underlying file stream.

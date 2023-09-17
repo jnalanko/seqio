@@ -290,11 +290,13 @@ public:
 
             int64_t read_len = fasta_read_concat_buf.size();
 
-            grow_buf_if_needed(&header_buf, &header_buf_cap, new_header_buf.size() + 1);
-            memcpy(header_buf, new_header_buf.data(), new_header_buf.size() + 1); // +1: null terminator
+            grow_buf_if_needed(&header_buf, &header_buf_cap, new_header_buf.size() + 1); // +1: null terminator
+            memcpy(header_buf, new_header_buf.data(), new_header_buf.size());
+            header_buf[new_header_buf.size()] = '\0';
 
-            grow_buf_if_needed(&read_buf, &read_buf_cap, new_read_buf.size() + 1);
-            memcpy(read_buf, fasta_read_concat_buf.data(), fasta_read_concat_buf.size() + 1); // +1: null terminator.
+            grow_buf_if_needed(&read_buf, &read_buf_cap, fasta_read_concat_buf.size() + 1); // +1: null terminator.
+            memcpy(read_buf, fasta_read_concat_buf.data(), fasta_read_concat_buf.size());
+            read_buf[fasta_read_concat_buf.size()] = '\0';
 
             if(reverse_complements){
                 // Store the reverse complement for later
@@ -319,11 +321,13 @@ public:
 
             for(char& c : new_read_buf) c = toupper(c);
 
-            grow_buf_if_needed(&header_buf, &header_buf_cap, new_header_buf.size() + 1);
-            memcpy(header_buf, new_header_buf.data(), new_header_buf.size() + 1); // +1: null terminator
+            grow_buf_if_needed(&header_buf, &header_buf_cap, new_header_buf.size() + 1); // +1: null terminator
+            memcpy(header_buf, new_header_buf.data(), new_header_buf.size());
+            header_buf[new_header_buf.size()] = '\0';
 
-            grow_buf_if_needed(&read_buf, &read_buf_cap, new_read_buf.size() + 1);
-            memcpy(read_buf, new_read_buf.data(), new_read_buf.size() + 1); // +1: null terminator.
+            grow_buf_if_needed(&read_buf, &read_buf_cap, new_read_buf.size() + 1); // +1: null terminator
+            memcpy(read_buf, new_read_buf.data(), new_read_buf.size());
+            read_buf[new_read_buf.size()] = '\0';
 
             int64_t read_len = new_read_buf.size();
 

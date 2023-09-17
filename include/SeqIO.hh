@@ -53,7 +53,7 @@ struct FileFormat{
 void reverse_complement_c_string(char* S, int64_t len){
     std::reverse(S, S + len);
     for(int64_t i = 0; i < len; i++)
-        S[i] = rc_table[S[i]];
+        S[i] = rc_table[(int)S[i]];
 }
 
 FileFormat figure_out_file_format(std::string filename){
@@ -115,7 +115,7 @@ void create_reverse_complement_file(const std::string& infile, const std::string
         // Reverse complement
         char* buf = sr.read_buf;
         std::reverse(buf, buf + len);
-        for(int64_t i = 0; i < len; i++) buf[i] = rc_table[buf[i]];
+        for(int64_t i = 0; i < len; i++) buf[i] = rc_table[(int)buf[i]];
 
         sw.write_sequence(buf, len);
     }

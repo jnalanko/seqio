@@ -22,4 +22,4 @@ target_link_libraries(tests GTest::GTest GTest::Main ZLIB::ZLIB)
 # Include the directory with your header files
 target_include_directories(tests PRIVATE include)
 
-# target_compile_options(tests PRIVATE -Wall -Wextra)
+target_compile_options(tests PRIVATE -Wall -Wextra -O3)

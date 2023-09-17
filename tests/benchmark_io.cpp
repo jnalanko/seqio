@@ -22,11 +22,15 @@ void benchmark_buffered_stream(){
     string data2(data.size(), '\0');
 
     int64_t t0 = cur_time_millis();
-    bin.read((char*)data2.data(), data2.size());
+    char c;
+    for(int64_t i = 0; i < data.size(); i++){
+        bin.get(&c);
+        data2[i] = c;
+    }
     int64_t t1 = cur_time_millis();
     double seconds = (t1 - t0) / 1000.0;
     cout << "Read " << data2.size() << " bytes" << endl;
-    cout << "Raw buffered bytes: " << data.size() / 1e6 / seconds << " MB/s" << endl;
+    cout << "Raw buffered bytes by byte: " << data.size() / 1e6 / seconds << " MB/s" << endl;
 
     std::filesystem::remove(outfile);
 }
@@ -38,7 +42,7 @@ void benchmark_seqio(){
     int64_t total_len = 0;
     for(int64_t i = 0; i < 100000; i++){
         reads.push_back(get_random_dna_string(100, 4));
-        total_len += 100;
+        total_len += reads.back().size();
     }
 
     string fastq = get_random_string(10, 26);

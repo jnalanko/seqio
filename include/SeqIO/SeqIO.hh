@@ -292,7 +292,7 @@ public:
 
             for(char& c : fasta_read_concat_buf){
                 // To upper case
-                c = upper_case_table[c];
+                c = upper_case_table[(int)c];
             }
 
             int64_t read_len = fasta_read_concat_buf.size();
@@ -328,7 +328,7 @@ public:
 
             for(char& c : new_read_buf){
                 // To upper case
-                c = upper_case_table[c];
+                c = upper_case_table[(int)c];
             }
 
             grow_buf_if_needed(&header_buf, &header_buf_cap, new_header_buf.size() + 1); // +1: null terminator

@@ -22,8 +22,8 @@ void benchmark_buffered_stream(){
     string data2(data.size(), '\0');
 
     int64_t t0 = cur_time_millis();
-    char c;
-    for(int64_t i = 0; i < data.size(); i++){
+    char c = 0;
+    for(int64_t i = 0; i < (int64_t)data.size(); i++){
         bin.get(&c);
         data2[i] = c;
     }

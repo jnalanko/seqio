@@ -10,28 +10,30 @@ set(SOURCES
 )
 
 # Add the Google Test library
-find_package(GTest REQUIRED)
+
 find_package(ZLIB REQUIRED)
 
-# Create an executable for your project
-add_executable(benchmark ${SOURCES})
+if(BUILD_SEQIO_BENCHMARK)
+    # Create benchmark executable
+    add_executable(benchmark ${SOURCES})
 
-# Link the executable with the Google Test library
-target_link_libraries(benchmark GTest::GTest GTest::Main ZLIB::ZLIB)
+    # Link the executable with the Google Test library
+    target_link_libraries(benchmark ZLIB::ZLIB)
 
-# Include the directory with your header files
-target_include_directories(benchmark PRIVATE include)
+    # Include the directory with your header files
+    target_include_directories(benchmark PRIVATE include)
 
-target_compile_options(benchmark PRIVATE -Wall -Wextra -O3)
+    target_compile_options(benchmark PRIVATE -Wall -Wextra -O3)
+endif()
 
-# Create a test executable and link with Google Test library
-add_executable(tests tests/test_IO.cpp tests/test_seqio.cpp tests/common.cpp)
-target_link_libraries(tests GTest::GTest GTest::Main ZLIB::ZLIB)
+if(BUILD_SEQIO_TESTS)
 
-# Include the directory with your header files for tests
-target_include_directories(tests PRIVATE include)
+    # Create a test executable and link with Google Test library
+    find_package(GTest REQUIRED)
+    add_executable(tests tests/test_IO.cpp tests/test_seqio.cpp tests/common.cpp)
+    target_link_libraries(tests GTest::GTest GTest::Main ZLIB::ZLIB)
 
-# Add your test source files here
+    # Include the directory with your header files for tests
+    target_include_directories(tests PRIVATE include)
 
-# Add tests to the test suite (optional)
-add_test(NAME YourTestSuite COMMAND tests)
+endif()

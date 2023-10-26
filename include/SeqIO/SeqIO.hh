@@ -287,6 +287,7 @@ public:
                 if (stream->eof()) throw std::runtime_error("FASTA file " + filename + " ended unexpectedly.");
                 fasta_read_concat_buf.append(new_read_buf);
                 stream->get(&c); // Start of the next line
+                if (c == '\n') throw std::runtime_error("Empty line inside sequence in file " + filename + ".");
                 if(stream->eof()) break;
             }
 

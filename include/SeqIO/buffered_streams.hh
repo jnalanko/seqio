@@ -36,8 +36,20 @@ private:
 
 public:
 
-    Buffered_ifstream(Buffered_ifstream&&) = default; // Movable
-    Buffered_ifstream& operator = (Buffered_ifstream&&) = default;  // Movable
+    Buffered_ifstream(Buffered_ifstream&& other){
+        *this = other; // Use move assignment
+    } // Movable
+
+    Buffered_ifstream& operator= (Buffered_ifstream&& other){
+        this->buf = move(other.buf);
+        this->buf_cap = other.buf_cap;
+        this->buf_pos = other.buf_pos;
+        this->buf_size = other.buf_size;
+        this->is_eof = other.is_eof;
+        this->inner = other.inner;
+        other.inner = nullptr; // Important!! Otherwise double free at destructor.
+        return *this;
+    };  // Movable
 
     Buffered_ifstream() {}
     ~Buffered_ifstream() {
@@ -169,8 +181,18 @@ private:
 
 public:
 
-    Buffered_ofstream(Buffered_ofstream&&) = default; // Movable
-    Buffered_ofstream& operator = (Buffered_ofstream&&) = default;  // Movable
+    Buffered_ofstream(Buffered_ofstream&& other){
+        *this = other; // Use move assignment
+    } // Movable
+
+    Buffered_ofstream& operator= (Buffered_ofstream&& other){
+        this->buf = move(other.buf);
+        this->buf_size = other.buf_size;
+        this->buf_cap = other.buf_cap;
+        this->stream = other.stream;
+        other.stream = nullptr; // Important!! Otherwise double free at destructor.
+        return *this;
+    };  // Movable
 
     Buffered_ofstream(){}
 

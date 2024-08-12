@@ -37,7 +37,7 @@ private:
 public:
 
     Buffered_ifstream(Buffered_ifstream&& other){
-        *this = other; // Use move assignment
+        *this = move(other); // Use move assignment
     } // Movable
 
     Buffered_ifstream& operator= (Buffered_ifstream&& other){
@@ -182,7 +182,7 @@ private:
 public:
 
     Buffered_ofstream(Buffered_ofstream&& other){
-        *this = other; // Use move assignment
+        *this = move(other); // Use move assignment
     } // Movable
 
     Buffered_ofstream& operator= (Buffered_ofstream&& other){

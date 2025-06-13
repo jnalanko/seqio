@@ -368,6 +368,80 @@ public:
 
 };
 
+class Reader_x {
+    private:
+    typedef Reader<seq_io::Buffered_ifstream<seq_io::zstr::ifstream>> Gz_Reader;
+
+    Reader<>* plain_reader_ = nullptr;
+    Gz_Reader* gz_reader_ = nullptr;
+    bool gzipped_ = false;
+
+    Reader_x(const Reader_x& temp_obj) = delete; // No copying
+    Reader_x& operator=(const Reader_x& temp_obj) = delete;  // No copying
+
+    public:
+    char* read_buf;
+
+    Reader_x(std::string& file_path){
+        FileFormat fmt = figure_out_file_format(file_path);
+        gzipped_ = fmt.gzipped;
+        if (gzipped_){
+            gz_reader_ = new Gz_Reader(file_path);
+            read_buf = gz_reader_->read_buf;
+        } else{
+            plain_reader_ = new Reader<>(file_path);
+            read_buf = plain_reader_->read_buf;
+        }
+    }
+
+    ~Reader_x(){
+        if (gzipped_){
+            delete gz_reader_;
+        } else{
+            delete plain_reader_;
+        }
+    }
+
+    void enable_reverse_complements(){
+        if (gzipped_){
+            gz_reader_->enable_reverse_complements();
+        } else{
+            plain_reader_->enable_reverse_complements();
+        }
+    }
+
+    void rewind_to_start(){
+        // Create a new stream
+        if (gzipped_){
+            gz_reader_->rewind_to_start();
+        } else{
+            plain_reader_->rewind_to_start();
+        }
+    }
+
+    int64_t get_mode() const{
+        return gzipped_ ? gz_reader_->get_mode() : plain_reader_->get_mode();
+    }
+
+    int64_t get_next_read_to_buffer(){
+        int64_t ret;
+        if (gzipped_){
+            ret = gz_reader_->get_next_read_to_buffer();
+            read_buf = gz_reader_->read_buf;
+        } else{
+            ret = plain_reader_->get_next_read_to_buffer();
+            read_buf = plain_reader_->read_buf;
+        }
+        return ret;
+    }    
+
+    std::string get_next_read(){
+        int64_t len = get_next_read_to_buffer();
+        std::string read = (len > 0 ? std::string(read_buf) : "");
+        return read;
+    }
+};
+
 // Produces reads from multiple files like it was a single file
 template<typename reader_t = seq_io::Reader<>>
 class Multi_File_Reader{

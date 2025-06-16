@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <fstream>
 #include <cassert>
@@ -59,7 +60,7 @@ inline void reverse_complement_c_string(char* S, int64_t len){
 }
 
 // Inlined to keep this a header-only library
-inline FileFormat figure_out_file_format(std::string filename){
+inline FileFormat figure_out_file_format(std::string_view filename){
     Format fasta_or_fastq;
     bool gzipped = false;
     std::string extension;
@@ -72,24 +73,35 @@ inline FileFormat figure_out_file_format(std::string filename){
 
     for(int64_t i = (int64_t)filename.size()-1; i >= 0; i--){
         if(filename[i] == '.'){
-            std::string ending = filename.substr(i);
-            
+            const auto ending = filename.substr(i);
+
             if(std::find(fasta_suffixes.begin(), fasta_suffixes.end(), ending) != fasta_suffixes.end()){
                 fasta_or_fastq = FASTA;
-                extension = ending + (gzipped ? ".gz" : "");
-                return {fasta_or_fastq, gzipped, extension};
-            }
-            
-            if(std::find(fastq_suffixes.begin(), fastq_suffixes.end(), ending) != fastq_suffixes.end()){
-                fasta_or_fastq = FASTQ;
-                extension = ending + (gzipped ? ".gz" : "");
+                extension = ending;
+                extension += (gzipped ? ".gz" : "");
                 return {fasta_or_fastq, gzipped, extension};
             }
 
-            throw(std::runtime_error("Unknown file format: " + filename + (gzipped ? ".gz" : "")));
+            if(std::find(fastq_suffixes.begin(), fastq_suffixes.end(), ending) != fastq_suffixes.end()){
+                fasta_or_fastq = FASTQ;
+                extension = ending;
+                extension += (gzipped ? ".gz" : "");
+                return {fasta_or_fastq, gzipped, extension};
+            }
+
+            std::string error{"Unknown file format: "};
+            error += filename;
+            error += gzipped ? ".gz" : "";
+            throw(std::runtime_error(error));
         }
     }
-    throw(std::runtime_error("Unknown file format: " + filename + (gzipped ? ".gz" : "")));
+
+    {
+        std::string error{"Unknown file format: "};
+        error += filename;
+        error += gzipped ? ".gz" : "";
+        throw(std::runtime_error(error));
+    }
 }
 
 class NullStream : public std::ostream {
@@ -98,14 +110,14 @@ public:
 };
 
 template <class T>
-const NullStream &operator<<(NullStream &&os, const T &value) { 
+const NullStream &operator<<(NullStream &&os, const T &value) {
   return os;
 }
 
 
 // Return the filename of the reverse-complemented file
 template<typename reader_t, typename writer_t>
-void create_reverse_complement_file(const std::string& infile, const std::string& outfile){
+void create_reverse_complement_file(std::string_view infile, std::string_view outfile){
     seq_io::FileFormat fileformat = seq_io::figure_out_file_format(infile);
 
     reader_t sr(infile);
@@ -138,14 +150,14 @@ class Reader {
 
 // The class is used like this:
 // Sequence_Reader_Buffered sr;
-// while(true) { 
+// while(true) {
 //   int64_t len = sr.get_next_read_to_buffer();
 //   if(len == 0) break;
 //   do something with sr.read_buf
 //}
 //
 // or (slow):
-// while(true) { 
+// while(true) {
 //   read = sr.get_next_read()
 //   if(read.size() == 0) break;
 //}
@@ -176,7 +188,7 @@ public:
     char* header_buf; // Stores the header of a read (without the '>' or '@')
 
     void read_first_char_and_sanity_check(){
-        
+
         char c = 0; stream->get(&c);
         if(mode == FASTA && c != '>')
             throw std::runtime_error("ERROR: FASTA file " + filename + " does not start with '>'");
@@ -189,11 +201,11 @@ public:
 
     // mode should be FASTA_MODE or FASTQ_MODE
     // Note: FASTQ mode does not support multi-line FASTQ
-    Reader(std::string filename, int64_t mode) : mode(mode), filename(filename) {
+    Reader(std::string_view filename_, int64_t mode) : mode(mode), filename(filename_) {
         stream = std::make_unique<ifstream_t>(filename, std::ios::binary);
         if(mode != FASTA && mode != FASTQ)
             throw std::invalid_argument("Unkown sequence format");
-        
+
         read_buf_cap = 256;
         read_buf = (char*)malloc(read_buf_cap);
 
@@ -203,12 +215,16 @@ public:
         read_first_char_and_sanity_check();
     }
 
-    Reader(std::string filename) : filename(filename) {
+    explicit Reader(std::string_view filename_) : filename(filename_) {
         stream = std::make_unique<ifstream_t>(filename, std::ios::binary);
         seq_io::FileFormat fileformat = figure_out_file_format(filename);
         if(fileformat.format == FASTA) mode = FASTA;
         else if(fileformat.format == FASTQ) mode = FASTQ;
-        else throw(std::runtime_error("Unknown file format: " + filename));
+        else {
+        	std::string error{"Unknown file format: "};
+            error += filename;
+            throw(std::runtime_error(error));
+        }
 
         read_buf_cap = 256;
         read_buf = (char*)malloc(read_buf_cap);
@@ -276,7 +292,7 @@ public:
             // Read the sequence
 
             stream->get(&c);
-            if(c == '\n') 
+            if(c == '\n')
                 throw std::runtime_error("Empty line in FASTA file " + filename + ".");
             else if(c == '>')
                 throw std::runtime_error("Empty sequence in FASTA file " + filename + ".");
@@ -382,7 +398,7 @@ class Reader_x {
     public:
     char* read_buf;
 
-    Reader_x(std::string& file_path){
+    explicit Reader_x(std::string_view file_path){
         FileFormat fmt = figure_out_file_format(file_path);
         gzipped_ = fmt.gzipped;
         if (gzipped_){
@@ -433,7 +449,7 @@ class Reader_x {
             read_buf = plain_reader_->read_buf;
         }
         return ret;
-    }    
+    }
 
     std::string get_next_read(){
         int64_t len = get_next_read_to_buffer();
@@ -456,7 +472,7 @@ class Multi_File_Reader{
     std::unique_ptr<reader_t> reader;
     bool reverse_complements = false;
 
-    Multi_File_Reader(const std::vector<std::string>& filenames) : filenames(filenames), current_file_idx(0){
+    explicit Multi_File_Reader(const std::vector<std::string>& filenames) : filenames(filenames), current_file_idx(0){
         if(filenames.size() > 0){
             reader = std::make_unique<reader_t>(filenames[0]);
         }
@@ -508,11 +524,15 @@ class Writer{
     int64_t mode;
 
     // Tries to figure out the format based on the file extension.
-    Writer(std::string filename) : out(filename) {
+    explicit Writer(std::string_view filename) : out(filename) {
         seq_io::FileFormat fileformat = figure_out_file_format(filename);
         if(fileformat.format == FASTA) mode = FASTA;
         else if(fileformat.format == FASTQ) mode = FASTQ;
-        else throw(std::runtime_error("Unknown file format: " + filename));
+        else {
+            std::string error{"Unknown file format: "};
+            error += filename;
+            throw(std::runtime_error(error));
+        }
     }
 
     void write_sequence(const char* seq, int64_t len){
@@ -539,7 +559,7 @@ class Writer{
     }
 };
 
-inline int64_t count_sequences(const std::string& filename){
+inline int64_t count_sequences(std::string_view filename){
     int64_t count = 0;
     if(figure_out_file_format(filename).gzipped){
         Reader<Buffered_ifstream<zstr::ifstream>> reader(filename);
